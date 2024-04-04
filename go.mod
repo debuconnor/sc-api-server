@@ -5,7 +5,7 @@ go 1.22.1
 require (
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/chromedp/chromedp v0.9.5
-	github.com/debuconnor/dbcore v0.0.0-20240403165644-28d059213d42
+	github.com/debuconnor/dbcore v0.0.0-20240404173426-94c3b7bc2f59
 	github.com/fasthttp/router v1.5.0
 	github.com/valyala/fasthttp v1.52.0
 )

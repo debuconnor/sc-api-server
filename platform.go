@@ -10,6 +10,8 @@ func NewPlatform(platform Platform) Website {
 }
 
 func (platform *Platform) Get() {
+	defer Recover()
+
 	if platform.Code != "" && platform.Admin != nil {
 		dml := dbcore.NewDml()
 		dml.SelectColumn(convertTableColumn(SCHEMA_PLATFORM, COLUMN_NAME))
@@ -49,6 +51,9 @@ func (platform *Platform) Get() {
 }
 
 func (platform *Platform) Save() {
+	defer Recover()
+	Log("Saving platform session: ", platform.Code, ", Admin: ", platform.Admin.(*Admin).Id)
+
 	dml := dbcore.NewDml()
 	dml.Delete()
 	dml.From(SCHEMA_SESSION)
@@ -74,6 +79,8 @@ func (platform *Platform) Parse(string) {}
 func (platform *Platform) Scrape() {}
 
 func (platform *Platform) Retrieve() {
+	defer Recover()
+
 	sessionReq := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(sessionReq)
 	reqBody := JSON_RETRIEVE_SESSION_PREFIX + platform.Admin.(*Admin).UserId + JSON_RETRIEVE_SESSION_MIDDLE + platform.Admin.(*Admin).Password + JSON_RETRIEVE_SESSION_SUFFIX
@@ -130,6 +137,8 @@ func (platform *Platform) Retrieve() {
 }
 
 func getPlatformSession(adminId int, platformCode string) map[string]string {
+	defer Recover()
+
 	dml := dbcore.NewDml()
 	dml.SelectColumn(COLUMN_SESSION)
 	dml.From(SCHEMA_SESSION)

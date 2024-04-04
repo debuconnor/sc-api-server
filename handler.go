@@ -12,12 +12,6 @@ func setupHandler(ctx *fasthttp.RequestCtx) {
 
 	dataJson := decodeJson(string(ctx.PostBody()))
 
-	err := db.ConnectMysql()
-	if err != nil {
-		Error(err)
-	}
-	defer db.DisconnectMysql()
-
 	platformCode := dataJson[COLUMN_PLATFORM_CODE].(string)
 
 	admin := NewAdmin(Admin{
@@ -55,10 +49,11 @@ func setupHandler(ctx *fasthttp.RequestCtx) {
 	}
 	waitPlace.Wait()
 
-	waitPlace.Add(len(platform.(*Platform).Places))
+	var waitPlace2 sync.WaitGroup
+	waitPlace2.Add(len(platform.(*Platform).Places))
 	for _, p := range places {
 		go func() {
-			defer waitPlace.Done()
+			defer waitPlace2.Done()
 			var waitRoom sync.WaitGroup
 			waitRoom.Add(len(p.(*Place).Rooms))
 
@@ -72,19 +67,13 @@ func setupHandler(ctx *fasthttp.RequestCtx) {
 			waitRoom.Wait()
 		}()
 	}
-	waitPlace.Wait()
+	waitPlace2.Wait()
 
 	ctx.SetBodyString("true")
 }
 
 func addHandler(ctx *fasthttp.RequestCtx) {
 	defer Recover()
-
-	err := db.ConnectMysql()
-	if err != nil {
-		Error(err)
-	}
-	defer db.DisconnectMysql()
 
 	dataJson := decodeJson(string(ctx.PostBody()))
 
@@ -109,7 +98,6 @@ func addHandler(ctx *fasthttp.RequestCtx) {
 	})
 
 	reservation := NewReservation(Reservation{
-		Id:          atoi(dataJson[COLUMN_RESERVATION_ID].(string)),
 		Admin:       admin,
 		Platform:    platform,
 		Customer:    customer,
@@ -117,29 +105,17 @@ func addHandler(ctx *fasthttp.RequestCtx) {
 		Date:        dataJson[COLUMN_DATE].(string),
 		SpendTime:   atoi(dataJson[COLUMN_SPEND_TIME].(string)),
 		PersonCount: atoi(dataJson[COLUMN_PERSON_COUNT].(string)),
-		Payment: Payment{
-			Amount:     atof(dataJson[COLUMN_AMOUNT].(string)),
-			PaidAmount: atof(dataJson[COLUMN_PAID_AMOUNT].(string)),
-			PaidPoint:  atof(dataJson[COLUMN_PAID_POINT].(string)),
-			CreatedAt:  getNow(),
-			UpdatedAt:  getNow(),
-		},
-		Memo:      dataJson[COLUMN_PLATFORM_CODE].(string),
-		CreatedAt: getNow(),
-		UpdatedAt: getNow(),
+		Memo:        dataJson[COLUMN_PLATFORM_CODE].(string),
+		CreatedAt:   getNow(),
+		UpdatedAt:   getNow(),
 	})
 
 	reservation.Save()
+	ctx.SetBodyString(itoa(reservation.(*Reservation).Id))
 }
 
 func cancelHandler(ctx *fasthttp.RequestCtx) {
 	defer Recover()
-
-	err := db.ConnectMysql()
-	if err != nil {
-		Error(err)
-	}
-	defer db.DisconnectMysql()
 
 	dataJson := decodeJson(string(ctx.PostBody()))
 
@@ -155,6 +131,7 @@ func cancelHandler(ctx *fasthttp.RequestCtx) {
 	dml.On(COLUMN_PLATFORM_CODE, dbcore.EQUAL, COLUMN_CODE)
 	dml.Where("", COLUMN_PLATFORM_CODE, dbcore.EQUAL, dataJson[COLUMN_PLATFORM_CODE].(string))
 	dml.Where(dbcore.AND, COLUMN_ADMIN_ID, dbcore.EQUAL, dataJson[COLUMN_ADMIN_ID].(string))
+	Log(dml.GetQueryString())
 	queryResult := dml.Execute(db.GetDb())
 
 	admin := NewAdmin(Admin{
@@ -168,25 +145,14 @@ func cancelHandler(ctx *fasthttp.RequestCtx) {
 		Url:     queryResult[0][COLUMN_URL],
 	})
 
-	place := NewPlace(Place{
-		Id:       atoi(dataJson[COLUMN_PLACE_ID].(string)),
+	reservation := NewReservation(Reservation{
+		Id:       atoi(dataJson[COLUMN_RESERVATION_ID].(string)),
+		Admin:    admin,
 		Platform: platform,
 	})
-	place.Get()
 
-	room := NewRoom(Room{
-		Id:    atoi(dataJson[COLUMN_ROOM_ID].(string)),
-		Place: place,
-	})
-
-	reservation := NewReservation(Reservation{
-		Id:    atoi(dataJson[COLUMN_RESERVATION_ID].(string)),
-		Admin: admin,
-		Room:  room,
-	})
-
-	reservation.Get()
 	reservation.Delete()
+	ctx.SetBodyString("true")
 }
 
 func saveHandler(ctx *fasthttp.RequestCtx) {}

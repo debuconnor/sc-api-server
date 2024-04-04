@@ -12,32 +12,40 @@ func NewReservation(reservation Reservation) Website {
 }
 
 func (reservation *Reservation) Get() {
+	defer Recover()
+
 	dml := dbcore.NewDml()
 	dml.SelectAll()
 	dml.From(SCHEMA_RESERVATION)
 	dml.Where("", COLUMN_ID, dbcore.EQUAL, itoa(reservation.Id))
 	queryResult := dml.Execute(db.GetDb())
 
-	reservation.Id = atoi(queryResult[0][COLUMN_ID])
-	reservation.Admin = NewAdmin(Admin{
-		Id: atoi(queryResult[0][COLUMN_ADMIN_ID]),
-	})
-	reservation.Customer = NewCustomer(Customer{
-		Id: atoi(queryResult[0][COLUMN_CUSTOMER_ID]),
-	})
-	reservation.Room = NewRoom(Room{
-		Id: atoi(queryResult[0][COLUMN_ROOM_ID]),
-	})
+	if len(queryResult) > 0 {
+		reservation.Id = atoi(queryResult[0][COLUMN_ID])
+		reservation.Admin = NewAdmin(Admin{
+			Id: atoi(queryResult[0][COLUMN_ADMIN_ID]),
+		})
+		reservation.Customer = NewCustomer(Customer{
+			Id: atoi(queryResult[0][COLUMN_CUSTOMER_ID]),
+		})
+		reservation.Room = NewRoom(Room{
+			Id: atoi(queryResult[0][COLUMN_ROOM_ID]),
+		})
 
-	reservation.Date = queryResult[0][COLUMN_DATE]
-	reservation.SpendTime = atoi(queryResult[0][COLUMN_SPEND_TIME])
-	reservation.PersonCount = atoi(queryResult[0][COLUMN_PERSON_COUNT])
-	reservation.Memo = queryResult[0][COLUMN_MEMO]
-	reservation.CreatedAt = queryResult[0][COLUMN_CREATED_AT]
-	reservation.UpdatedAt = queryResult[0][COLUMN_UPDATED_AT]
+		reservation.Date = queryResult[0][COLUMN_DATE]
+		reservation.SpendTime = atoi(queryResult[0][COLUMN_SPEND_TIME])
+		reservation.PersonCount = atoi(queryResult[0][COLUMN_PERSON_COUNT])
+		reservation.Memo = queryResult[0][COLUMN_MEMO]
+		reservation.CreatedAt = queryResult[0][COLUMN_CREATED_AT]
+		reservation.UpdatedAt = queryResult[0][COLUMN_UPDATED_AT]
+	} else {
+		reservation.Id = 0
+	}
 }
 
 func (reservation *Reservation) Save() {
+	defer Recover()
+
 	date := reservation.Date
 	addDay, hour := convertMinuteToDayHour(itoa(reservation.SpendTime))
 	shour := getHour(date)
@@ -71,7 +79,7 @@ func (reservation *Reservation) Save() {
 		JSON_START_DATE, sDate,
 		JSON_END_DATE, eDate,
 		JSON_START_HOUR, itoa(shour),
-		JSON_END_HOUR, itoa(ehour),
+		JSON_END_HOUR, itoa(ehour-1),
 		JSON_NAME, reservation.Customer.(*Customer).Name,
 		JSON_TEL, reservation.Customer.(*Customer).Phone,
 		JSON_MEMO, reservation.Platform.(*Platform).Code,
@@ -124,55 +132,75 @@ func (reservation *Reservation) Save() {
 	}
 
 	if resp.StatusCode() == fasthttp.StatusOK {
-		dml := dbcore.NewDml()
-		dml.Insert()
-		dml.Into(SCHEMA_PAYMENT)
-		dml.Value(COLUMN_AMOUNT, ftoa(reservation.Payment.Amount))
-		dml.Value(COLUMN_PAID_AMOUNT, ftoa(reservation.Payment.PaidAmount))
-		dml.Value(COLUMN_PAID_POINT, ftoa(reservation.Payment.PaidPoint))
-		dml.Value(COLUMN_CREATED_AT, reservation.Payment.CreatedAt)
-		dml.Value(COLUMN_UPDATED_AT, reservation.Payment.UpdatedAt)
-		dml.Execute(db.GetDb())
+		reservationId := reservation.Id
+		reservation.Get()
 
-		dml.Clear()
-		dml.Insert()
-		dml.Into(SCHEMA_RESERVATION)
-		dml.Value(COLUMN_ID, itoa(reservation.Id))
-		dml.Value(COLUMN_ADMIN_ID, itoa(reservation.Admin.(*Admin).Id))
-		dml.Value(COLUMN_CUSTOMER_ID, itoa(reservation.Customer.(*Customer).Id))
-		dml.Value(COLUMN_ROOM_ID, itoa(reservation.Room.(*Room).Id))
-		dml.Value(COLUMN_PAYMENT_ID, itoa(reservation.Payment.Id))
-		dml.Value(COLUMN_STATUS, "0") // TODO: Set status
-		dml.Value(COLUMN_DATE, reservation.Date)
-		dml.Value(COLUMN_SPEND_TIME, itoa(reservation.SpendTime))
-		dml.Value(COLUMN_PERSON_COUNT, itoa(reservation.PersonCount))
-		dml.Value(COLUMN_MEMO, reservation.Memo)
-		dml.Value(COLUMN_CREATED_AT, reservation.CreatedAt)
-		dml.Value(COLUMN_UPDATED_AT, reservation.UpdatedAt)
-		dml.Execute(db.GetDb())
+		if reservation.Id == 0 {
+			dml := dbcore.NewDml()
+			dml.Insert()
+			dml.Into(SCHEMA_RESERVATION)
+			dml.Value(COLUMN_ID, itoa(reservationId))
+			dml.Value(COLUMN_ADMIN_ID, itoa(reservation.Admin.(*Admin).Id))
+			dml.Value(COLUMN_CUSTOMER_ID, itoa(reservation.Customer.(*Customer).Id))
+			dml.Value(COLUMN_ROOM_ID, itoa(reservation.Room.(*Room).Id))
+			dml.Value(COLUMN_STATUS, "0") // TODO: Set status
+			dml.Value(COLUMN_DATE, reservation.Date)
+			dml.Value(COLUMN_SPEND_TIME, itoa(reservation.SpendTime))
+			dml.Value(COLUMN_PERSON_COUNT, itoa(reservation.PersonCount))
+			dml.Value(COLUMN_MEMO, reservation.Memo)
+			dml.Value(COLUMN_CREATED_AT, reservation.CreatedAt)
+			dml.Value(COLUMN_UPDATED_AT, reservation.UpdatedAt)
+			dml.Execute(db.GetDb())
+			reservation.Id = reservationId
+		} else {
+			reservation.Update()
+		}
 	}
 }
 
 func (reservation *Reservation) Delete() {
+	defer Recover()
+
 	reservation.Get()
 
-	dml := dbcore.NewDml()
-	dml.Delete()
-	dml.From(SCHEMA_RESERVATION)
-	dml.Where("", COLUMN_ID, dbcore.EQUAL, itoa(reservation.Id))
-	dml.Execute(db.GetDb())
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
 
-	dml.Clear()
-	dml.Delete()
-	dml.From(SCHEMA_PAYMENT)
-	dml.Where("", COLUMN_ID, dbcore.EQUAL, itoa(reservation.Payment.Id))
-	dml.Execute(db.GetDb())
+	req.Header.SetMethod(HEADER_METHOD_DELETE)
+	req.Header.Set(HEADER_AUTHORIZATION, reservation.Platform.(*Platform).Session[PLATFORM_COLUMN_ACCESS_TOKEN])
 
-	reservation = NewReservation(Reservation{}).(*Reservation)
-	_ = reservation
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	req.SetRequestURI(URI_SAVE_RESERVATION_PREFIX + itoa(reservation.Room.(*Room).Id) + URI_SAVE_RESERVATION_SUFFIX + itoa(reservation.Id))
+
+	err := fasthttp.Do(req, resp)
+	if err != nil {
+		Error(err)
+	} else {
+		dml := dbcore.NewDml()
+		dml.Delete()
+		dml.From(SCHEMA_RESERVATION)
+		dml.Where("", COLUMN_ID, dbcore.EQUAL, itoa(reservation.Id))
+		dml.Execute(db.GetDb())
+
+		reservation = NewReservation(Reservation{}).(*Reservation)
+		_ = reservation
+	}
 }
 
-func (reservation *Reservation) Update() {}
+func (reservation *Reservation) Update() {
+	defer Recover()
+
+	dml := dbcore.NewDml()
+	dml.Update(SCHEMA_RESERVATION)
+	dml.Set(COLUMN_DATE, reservation.Date)
+	dml.Set(COLUMN_SPEND_TIME, itoa(reservation.SpendTime))
+	dml.Set(COLUMN_PERSON_COUNT, itoa(reservation.PersonCount))
+	dml.Set(COLUMN_MEMO, reservation.Memo)
+	dml.Set(COLUMN_UPDATED_AT, getNow())
+	dml.Where("", COLUMN_ID, dbcore.EQUAL, itoa(reservation.Id))
+	dml.Execute(db.GetDb())
+}
 
 func (reservation *Reservation) Parse(string) {}
 

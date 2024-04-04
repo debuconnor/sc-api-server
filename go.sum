@@ -32,6 +32,12 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/debuconnor/dbcore v0.0.0-20240403165644-28d059213d42 h1:8BKTp5jBWlUCEiV+9NF4mz8XD4V513O9tLqmvRTkBMk=
 github.com/debuconnor/dbcore v0.0.0-20240403165644-28d059213d42/go.mod h1:BBChbzN2LRttDMc6PPXW8nHbekSRhWDkke9Dzz8/K2c=
+github.com/debuconnor/dbcore v0.0.0-20240404154754-89d874010537 h1:6GqB+S9Pk0G56KYhMsxP4haqlC0+bA25zwX34kn7h9c=
+github.com/debuconnor/dbcore v0.0.0-20240404154754-89d874010537/go.mod h1:BBChbzN2LRttDMc6PPXW8nHbekSRhWDkke9Dzz8/K2c=
+github.com/debuconnor/dbcore v0.0.0-20240404160621-80ef6a5dd3a5 h1:ic6YPv8LtMDMh9Io9xBZVdt9h22Pisq1/3DjQ6DNQZk=
+github.com/debuconnor/dbcore v0.0.0-20240404160621-80ef6a5dd3a5/go.mod h1:BBChbzN2LRttDMc6PPXW8nHbekSRhWDkke9Dzz8/K2c=
+github.com/debuconnor/dbcore v0.0.0-20240404173426-94c3b7bc2f59 h1:TClbAFdlHsg7GIl0cIvpcc1d5Cl4SOJTGLffFvDnU5g=
+github.com/debuconnor/dbcore v0.0.0-20240404173426-94c3b7bc2f59/go.mod h1:BBChbzN2LRttDMc6PPXW8nHbekSRhWDkke9Dzz8/K2c=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

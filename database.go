@@ -18,4 +18,5 @@ func initDb() {
 	db = dbcore.NewDb()
 	db.SetConnectionFromGcpSecret(GCP_SECRET_VERSION)
 	checkDb()
+	db.ConnectMysql()
 }

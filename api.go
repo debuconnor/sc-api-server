@@ -10,6 +10,7 @@ import (
 
 func Run() {
 	initDb()
+	defer db.DisconnectMysql()
 	r := router.New()
 
 	r.POST("/setup", setupHandler)
