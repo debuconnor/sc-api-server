@@ -37,6 +37,15 @@ func decodeJson(jsonStr string) (result map[string]interface{}) {
 	return
 }
 
+func encodeJsonStruct(data interface{}) (result string) {
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		Error(errors.New("ERROR_ENCODE_JSON"))
+	}
+	result = string(jsonStr)
+	return
+}
+
 func decodeJsonArray(jsonStr string) (result []map[string]interface{}) {
 	err := json.Unmarshal([]byte(jsonStr), &result)
 	if err != nil {
@@ -46,6 +55,10 @@ func decodeJsonArray(jsonStr string) (result []map[string]interface{}) {
 }
 
 func atoi(str string) (result int) {
+	if str == "" {
+		return 0
+	}
+
 	result, err := strconv.Atoi(str)
 	if err != nil {
 		Error(errors.New("ERROR_PARSE_JSON"))
@@ -54,9 +67,13 @@ func atoi(str string) (result int) {
 }
 
 func atof(str string) (result float64) {
+	if str == "" {
+		return 0
+	}
+
 	result, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		Error(errors.New("ERROR_PARSE_JSON"))
+		Error(err)
 	}
 	return
 }

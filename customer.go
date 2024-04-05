@@ -46,10 +46,10 @@ func (user *Customer) Save() {
 		dml.Value(COLUMN_NAME, user.Name)
 		dml.Value(COLUMN_PHONE, user.Phone)
 		dml.Value(COLUMN_EMAIL, user.Email)
+		dml.Value(COLUMN_STATUS, "0") // TODO: status code
 		dml.Execute(db.GetDb())
-
-		user.Get()
 	}
+	user.Get()
 }
 
 func (user *Customer) Delete() {}

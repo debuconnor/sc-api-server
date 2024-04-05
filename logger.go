@@ -57,7 +57,8 @@ func SaveLog(filename string, msg ...interface{}) {
 func Recover() {
 	err := recover()
 	if err != nil {
-		log.Println("Recover from ", string(debug.Stack()))
+		log.Println("Recover from ", err)
+		log.Println(string(debug.Stack()))
 	}
 }
 

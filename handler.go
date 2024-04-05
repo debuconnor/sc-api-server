@@ -98,10 +98,18 @@ func addHandler(ctx *fasthttp.RequestCtx) {
 	})
 
 	reservation := NewReservation(Reservation{
-		Admin:       admin,
-		Platform:    platform,
-		Customer:    customer,
-		Room:        room,
+		Id:       atoi(dataJson[COLUMN_RESERVATION_ID].(string)),
+		Admin:    admin,
+		Platform: platform,
+		Customer: customer,
+		Room:     room,
+		Payment: Payment{
+			Amount:     atof(dataJson[COLUMN_AMOUNT].(string)),
+			PaidAmount: atof(dataJson[COLUMN_PAID_AMOUNT].(string)),
+			PaidPoint:  atof(dataJson[COLUMN_PAID_POINT].(string)),
+			CreatedAt:  getNow(),
+			UpdatedAt:  getNow(),
+		},
 		Date:        dataJson[COLUMN_DATE].(string),
 		SpendTime:   atoi(dataJson[COLUMN_SPEND_TIME].(string)),
 		PersonCount: atoi(dataJson[COLUMN_PERSON_COUNT].(string)),
@@ -131,7 +139,6 @@ func cancelHandler(ctx *fasthttp.RequestCtx) {
 	dml.On(COLUMN_PLATFORM_CODE, dbcore.EQUAL, COLUMN_CODE)
 	dml.Where("", COLUMN_PLATFORM_CODE, dbcore.EQUAL, dataJson[COLUMN_PLATFORM_CODE].(string))
 	dml.Where(dbcore.AND, COLUMN_ADMIN_ID, dbcore.EQUAL, dataJson[COLUMN_ADMIN_ID].(string))
-	Log(dml.GetQueryString())
 	queryResult := dml.Execute(db.GetDb())
 
 	admin := NewAdmin(Admin{
@@ -155,6 +162,14 @@ func cancelHandler(ctx *fasthttp.RequestCtx) {
 	ctx.SetBodyString("true")
 }
 
-func saveHandler(ctx *fasthttp.RequestCtx) {}
+func getHandler(ctx *fasthttp.RequestCtx) {
+	defer Recover()
 
-func deleteHandler(ctx *fasthttp.RequestCtx) {}
+	reservationId := atoi(string(ctx.QueryArgs().Peek("reservation_id")))
+	reservation := NewReservation(Reservation{
+		Id: reservationId,
+	})
+
+	reservation.Get()
+	ctx.SetBodyString(encodeJsonStruct(reservation))
+}
