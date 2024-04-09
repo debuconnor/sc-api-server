@@ -10,6 +10,9 @@ import (
 
 func Run() {
 	initDb()
+	SECRET_KEY = accessSecretVersion(KEY_SECRET_VERSION)
+	SECRET_SALT = accessSecretVersion(SALT_SECRET_VERSION)
+
 	defer db.DisconnectMysql()
 	r := router.New()
 

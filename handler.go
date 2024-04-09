@@ -15,9 +15,10 @@ func setupHandler(ctx *fasthttp.RequestCtx) {
 	platformCode := dataJson[COLUMN_PLATFORM_CODE].(string)
 
 	admin := NewAdmin(Admin{
-		Id: atoi(dataJson[COLUMN_ADMIN_ID].(string)),
+		UserId:   dataJson[COLUMN_USER_ID].(string),
+		Password: dataJson[COLUMN_PASSWORD].(string),
 	})
-	admin.Get()
+	admin.Save()
 
 	dml := dbcore.NewDml()
 	dml.SelectAll()

@@ -61,12 +61,17 @@ func (platform *Platform) Save() {
 	dml.Where(dbcore.AND, COLUMN_ADMIN_ID, dbcore.EQUAL, itoa(platform.Admin.(*Admin).Id))
 	dml.Execute(db.GetDb())
 
+	session, err := encrypt(encodeJson(convertToInterfaceMap(platform.Session)), SECRET_SALT, SECRET_KEY)
+	if err != nil {
+		Error(err)
+	}
+
 	dml.Clear()
 	dml.Insert()
 	dml.Into(SCHEMA_SESSION)
 	dml.Value(COLUMN_PLATFORM_CODE, platform.Code)
 	dml.Value(COLUMN_ADMIN_ID, itoa(platform.Admin.(*Admin).Id))
-	dml.Value(COLUMN_SESSION, encodeJson(convertToInterfaceMap(platform.Session)))
+	dml.Value(COLUMN_SESSION, session)
 	dml.Execute(db.GetDb())
 }
 
@@ -146,5 +151,9 @@ func getPlatformSession(adminId int, platformCode string) map[string]string {
 	dml.Where(dbcore.AND, COLUMN_ADMIN_ID, dbcore.EQUAL, itoa(adminId))
 	queryResult := dml.Execute(db.GetDb())
 
-	return convertToStringMap(decodeJson(queryResult[0][COLUMN_SESSION]))
+	session, err := decrypt(queryResult[0][COLUMN_SESSION], SECRET_SALT, SECRET_KEY)
+	if err != nil {
+		Error(err)
+	}
+	return convertToStringMap(decodeJson(session))
 }
