@@ -149,7 +149,7 @@ func cancelHandler(ctx *fasthttp.RequestCtx) {
 	platform := NewPlatform(Platform{
 		Code:    queryResult[0][COLUMN_CODE],
 		Admin:   admin,
-		Session: convertToStringMap(decodeJson(queryResult[0][COLUMN_SESSION])),
+		Session: getPlatformSession(admin.(*Admin).Id, dataJson[COLUMN_PLATFORM_CODE].(string)),
 		Url:     queryResult[0][COLUMN_URL],
 	})
 
