@@ -67,6 +67,7 @@ func (place *Place) Save() {
 func (place *Place) Delete() {}
 
 func (place *Place) Update() {
+	defer Recover()
 	dml := dbcore.NewDml()
 	dml.Update(SCHEMA_PLACE)
 	dml.Set(COLUMN_NAME, place.Name)
@@ -106,10 +107,11 @@ func (place *Place) Retrieve() {
 		for _, roomData := range roomData[PLATFORM_COLUMN_ROOM].([]interface{}) {
 			roomMap := roomData.(map[string]interface{})
 			room := Room{
-				Id:    int(roomMap[COLUMN_ID].(float64)),
-				Place: place,
-				Name:  roomMap[COLUMN_NAME].(string),
-				Price: roomMap[COLUMN_PRICE].(float64),
+				Id:          int(roomMap[COLUMN_ID].(float64)),
+				Place:       place,
+				Name:        roomMap[COLUMN_NAME].(string),
+				Price:       roomMap[COLUMN_PRICE].(float64),
+				Description: "",
 			}
 			place.Rooms = append(place.Rooms, room)
 		}

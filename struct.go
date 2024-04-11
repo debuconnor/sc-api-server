@@ -28,12 +28,13 @@ type Place struct {
 }
 
 type Room struct {
-	Id     int
-	Place  Website
-	Name   string
-	Price  float64
-	Status Status
-	Url    string
+	Id          int
+	Place       Website
+	Name        string
+	Price       float64
+	Description string
+	Status      Status
+	Url         string
 }
 
 type Reservation struct {
