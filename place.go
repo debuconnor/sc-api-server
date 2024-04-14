@@ -79,8 +79,6 @@ func (place *Place) Update() {
 	dml.Execute(db.GetDb())
 }
 
-func (place *Place) Parse(string) {}
-
 func (place *Place) Scrape() {}
 
 func (place *Place) Retrieve() {

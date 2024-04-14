@@ -256,8 +256,6 @@ func (reservation *Reservation) Update() {
 	dml.Execute(db.GetDb())
 }
 
-func (reservation *Reservation) Parse(string) {}
-
 func (reservation *Reservation) Scrape() {}
 
 func (reservation *Reservation) Retrieve() {}
