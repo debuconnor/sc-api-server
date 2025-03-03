@@ -79,7 +79,7 @@ func (place *Place) Update() {
 	dml.Execute(db.GetDb())
 }
 
-func (place *Place) Scrape() {}
+func (place *Place) Scrape(page int) string { return "" }
 
 func (place *Place) Retrieve() {
 	defer Recover()

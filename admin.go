@@ -70,6 +70,6 @@ func (user *Admin) Delete() {}
 
 func (user *Admin) Update() {}
 
-func (user *Admin) Scrape() {}
+func (user *Admin) Scrape(page int) string { return "" }
 
 func (user *Admin) Retrieve() {}

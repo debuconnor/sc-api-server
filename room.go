@@ -68,6 +68,6 @@ func (room *Room) Update() {
 	dml.Execute(db.GetDb())
 }
 
-func (room *Room) Scrape() {}
+func (room *Room) Scrape(page int) string { return "" }
 
 func (room *Room) Retrieve() {}

@@ -56,6 +56,6 @@ func (user *Customer) Delete() {}
 
 func (user *Customer) Update() {}
 
-func (user *Customer) Scrape() {}
+func (user *Customer) Scrape(page int) string { return "" }
 
 func (user *Customer) Retrieve() {}

@@ -1,7 +1,7 @@
 package roomapi
 
 type Browser interface {
-	Scrape()
+	Scrape(int) string
 	Retrieve()
 }
 

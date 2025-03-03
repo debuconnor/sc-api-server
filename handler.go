@@ -174,3 +174,27 @@ func getHandler(ctx *fasthttp.RequestCtx) {
 	reservation.Get()
 	ctx.SetBodyString(encodeJsonStruct(reservation))
 }
+
+func scrapeHandler(ctx *fasthttp.RequestCtx) {
+	defer Recover()
+
+	dataJson := decodeJson(string(ctx.PostBody()))
+	page := ftoi(dataJson[JSON_PAGE].(float64))
+
+	admin := NewAdmin(Admin{
+		Id: ftoi(dataJson[COLUMN_ADMIN_ID].(float64)),
+	})
+
+	platform := NewPlatform(Platform{
+		Code:    dataJson[COLUMN_PLATFORM_CODE].(string),
+		Session: getPlatformSession(admin.(*Admin).Id, dataJson[COLUMN_PLATFORM_CODE].(string)),
+	})
+
+	reservation := NewReservation(Reservation{
+		Admin:    admin,
+		Platform: platform,
+	})
+
+	result := reservation.Scrape(page)
+	ctx.SetBodyString(result)
+}

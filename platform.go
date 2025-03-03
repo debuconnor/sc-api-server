@@ -79,7 +79,7 @@ func (platform *Platform) Delete() {}
 
 func (platform *Platform) Update() {}
 
-func (platform *Platform) Scrape() {}
+func (platform *Platform) Scrape(page int) string { return "" }
 
 func (platform *Platform) Retrieve() {
 	defer Recover()

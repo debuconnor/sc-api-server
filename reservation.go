@@ -256,6 +256,26 @@ func (reservation *Reservation) Update() {
 	dml.Execute(db.GetDb())
 }
 
-func (reservation *Reservation) Scrape() {}
+func (reservation *Reservation) Scrape(page int) string {
+	defer Recover()
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.Header.SetMethod(HEADER_METHOD_GET)
+	req.Header.Set(HEADER_AUTHORIZATION, reservation.Platform.(*Platform).Session[PLATFORM_COLUMN_ACCESS_TOKEN])
+	req.Header.Set(HEADER_USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	req.SetRequestURI(URI_RETRIEVE_RESERVATION + itoa(page))
+
+	err := fasthttp.Do(req, resp)
+	if err != nil {
+		Error(err)
+	}
+
+	return string(resp.Body())
+}
 
 func (reservation *Reservation) Retrieve() {}

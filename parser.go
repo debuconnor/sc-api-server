@@ -88,6 +88,11 @@ func ftoa(num float64) (result string) {
 	return
 }
 
+func ftoi(num float64) (result int) {
+	result = int(num)
+	return
+}
+
 func getYear(date string) int {
 	year := atoi(strings.Split(date, "-")[0])
 	return year
